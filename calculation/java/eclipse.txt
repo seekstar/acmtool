@@ -1,0 +1,25 @@
+﻿提交之前一定要把package删掉
+
+新建工程：
+File->New->Java Project->(input the name)->Finish->(Don't create module)->(右键src)->New->Class->(Make package empty(use the default package) -> Name is "Main" -> Finish
+
+如果不小心把console关掉了，Window->Show View->Console可以重新打开
+
+java函数是值传递。当参数是引用时传递的是引用的值。
+String name = "qjs"
+name是一个引用。
+static void func(String name) {
+	name = "lalala"
+}
+这个函数返回后name的内容不变，因为时拷贝了引用的值。而name = "lalala"使得形参name指向了另一个String。
+
+java里的"#define":
+在class Main里写：
+public static final int MAXN = 5010;
+
+输出四舍五入保留5位小数
+System.out.println(String.format("%.5f", ans));
+
+BigInteger -> int
+int gcd = dem.gcd(BigInteger.valueOf(n)).intValue();
+

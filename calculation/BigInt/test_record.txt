@@ -1,0 +1,42 @@
+SignedBigInt -= SignedBigInt
+SignedBigInt - SignedBigInt
+
+sqrt
+
+hdu 4762
+UnsignedBigInt *= int
+UnsignedBigInt % int
+UnsignedBigInt /= int
+UnsignedBigInt == int
+cout << UnsignedBigInt
+
+luogu_1050
+UnsignedBIgInt.DivEq_Mod
+(bool)UnsignedBigInt
+UnsignedBigInt *= UnsignedBigInt
+UnsignedBigInt %= UnsignedBigInt
+int * UnsignedBigInt
+UnsignedBigInt *= 10
+UnsignedBigInt * UnsignedBigInt
+UnsignedBigInt % UnsignedBigInt
+
+luogu_2144
+UnsignedBIgInt -= UnsignedBIgInt
+UnsignedBIgInt - UnsignedBIgInt
+UnsignedBIgInt - int
+
+
+//now accepted
+cin >> SignedBigInt
+SignedBigInt * SignedBigInt
+SignedBigInt < SignedBigInt
+SignedBigInt *= int
+SignedBigInt(int)
+(bool)SignedBigInt
+SignedBigInt /= int
+SignedBigInt - int
+SignedBigInt += SignedBigInt
+SignedBigInt = SignedBigInt
+SignedBigInt <= SignedBigInt
+SignedBigInt %= SignedBigInt
+
