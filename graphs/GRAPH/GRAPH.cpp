@@ -16,4 +16,3 @@ struct GRAPH {
 		s[u].emplace_back(v);
 	}
 };
-
