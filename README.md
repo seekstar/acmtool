@@ -2,7 +2,7 @@
 
 #### Description
 
-Almost all code was written by myself, but I borrowed some code and ideas from others.
+Almost all code was written by myself, but I learned from some code and ideas from others.
 
 #### overview
 
