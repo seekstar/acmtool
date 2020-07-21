@@ -1,0 +1,5 @@
+CLion enable warning:
+File->Settings->Build,Execution,Deployment->CMake->CMake options
+-DCMAKE_CXX_FLAGS="-Wall"
+
+//Code->code inspection->...->
