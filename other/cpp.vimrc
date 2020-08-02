@@ -4,7 +4,8 @@ set softtabstop=4
 set cindent
 set smartindent	" next level indent
 
-vmap <C-S-P> :s,^,// ,<CR>
+vmap <C-P> :s,^,// ,<CR>
+vmap <C-M> :s,^// ,,<CR>
 
 func! Compile()
 	exec "!g++ -std=c++14 -Wall -g % -o %< -lpthread"
