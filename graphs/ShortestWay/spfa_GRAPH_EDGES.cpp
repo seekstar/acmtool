@@ -1,4 +1,4 @@
-﻿//O(VE)
+//O(VE)
 //record_e[i]是fa[i]->i的边的编号
 template<typename DistType>
 void spfa(const GRAPH_EDGES& graph, int s, DistType dist[], int record_e[]) {
