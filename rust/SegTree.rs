@@ -1,6 +1,3 @@
-struct SegTree<T> {
-    sum: Vec<T>
-}
 #[inline]
 fn ls(rt: usize) -> usize {
     return rt << 1;
@@ -8,6 +5,10 @@ fn ls(rt: usize) -> usize {
 #[inline]
 fn rs(rt: usize) -> usize {
     return rt << 1 | 1;
+}
+
+struct SegTree<T> {
+    sum: Vec<T>
 }
 impl<T: Zero + Copy + std::default::Default + std::ops::AddAssign + std::clone::Clone> SegTree<T> {
     fn build(&mut self, rt: usize, l: usize, r: usize, v: &[T]) {

@@ -1,6 +1,6 @@
 template<typename T>
 struct SGT {
-	//const static int max_node = MAXN2 << 2;
+	//const static int max_node = MAXN << 2;
 	T maxi[max_node];
 
 	void Init(int n) {
@@ -31,4 +31,3 @@ struct SGT {
 		}
 	}
 };
-
