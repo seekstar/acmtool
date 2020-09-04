@@ -1,7 +1,7 @@
 //Multiple intervally, add intervally, get the sum of an interval
 //#define MAX_NODE_SEGTREE (MAXN * 4)
 template<typename ValType>
-struct SegTree_RangeMul_RangeAdd_RangeSum
+struct SegTree
 {
     ValType val[MAX_NODE_SEGTREE];
     //THe lazy tags are for the children. The root itself is up to date.
