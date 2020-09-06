@@ -46,3 +46,47 @@ fn kruskal<AnsT: Zero + NumCast + std::ops::AddAssign>(g: &Graph) -> Option<AnsT
         None
     }
 }
+
+
+// Faster
+#[derive(Copy, Clone, Eq, PartialEq)]
+struct Edge {
+    d: i32,
+    a: usize,
+    b: usize
+}
+impl Ord for Edge {
+    fn cmp(&self, rhs: &Edge) -> Ordering {
+        self.d.cmp(&rhs.d)
+    }
+}
+impl PartialOrd for Edge {
+    fn partial_cmp(&self, rhs: &Edge) -> Option<Ordering> {
+        Some(self.cmp(rhs))
+    }
+}
+// Return -1 if not connected
+fn kruskal<AnsT: Zero + NumCast + std::ops::AddAssign>(edges: &mut Vec<Edge>, n: usize) -> Option<AnsT> {
+    edges.sort_unstable();
+    let mut disj = Disjoint::new(n + 1);
+    let mut cnt = 0;
+    let mut ans = AnsT::zero();
+    for Edge{d, a, b} in edges {
+        if cnt == n - 1 {
+            break;
+        }
+        let ra = disj.root_of(*a);
+        let rb = disj.root_of(*b);
+        if ra == rb {
+            continue;
+        }
+        disj.union_root_neq(ra, rb);
+        cnt += 1;
+        ans += AnsT::from(*d).unwrap();
+    }
+    if cnt == n - 1 {
+        Some(ans)
+    } else {
+        None
+    }
+}
