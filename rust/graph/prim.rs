@@ -31,7 +31,7 @@ fn prim(g: &Graph) -> i32 {
     return ans;
 }
 
-// O(V^2). In fact slower than the one using adjacency list.
+// O(V^2). Use matrix. In fact slower than the one using adjacency list.
 // Return -1 if not connected
 fn prim_mat(g: &GraphMat) -> i32 {
     const INF: i32 = 0x3f3f3f3f;

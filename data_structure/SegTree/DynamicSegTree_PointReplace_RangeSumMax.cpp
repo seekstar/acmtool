@@ -52,4 +52,3 @@ struct DynamicSegTree {
 		return ans;
 	}
 };
-
