@@ -6,8 +6,8 @@ void RadixSort(T base[], int n){
 
 	static T buffer[MAX_LENGTH];
 	static T t[MAX_LENGTH];
-    static T sa[MAX_LENGTH];	//sa[i] is the index of the i_th smallest number
-    static T c[MAX_BUCKET];
+    static int sa[MAX_LENGTH];	//shift a? sa[i] is the index of the i_th smallest number
+    static int c[MAX_BUCKET];
 
 	T *a = base, *b = buffer;
 	for(int k = 0; k < max_bit; k += 8){

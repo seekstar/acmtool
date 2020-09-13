@@ -29,4 +29,3 @@ LL Kruskal(const GRAPH& g, GRAPH& ng) {
 	}
 	return ans;
 }
-
