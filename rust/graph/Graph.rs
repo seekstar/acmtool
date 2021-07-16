@@ -1,6 +1,6 @@
 // Not tested
-struct Graph {
-    s: Vec<Vec<(usize, i32)>>
+struct Graph<T> {
+    s: Vec<Vec<(usize, T)>>
 }
 impl Graph {
     fn new() -> Graph {
@@ -17,10 +17,10 @@ impl Graph {
         self.s.resize(n + 1, Vec::new());
         self.clear_edges();
     }
-    fn add_di(&mut self, u: usize, v: usize, dist: i32) {
+    fn add_di(&mut self, u: usize, v: usize, dist: T) {
         self.s[u].push((v, dist));
     }
-    fn add_undi(&mut self, u: usize, v: usize, dist: i32) {
+    fn add_undi(&mut self, u: usize, v: usize, dist: T) {
         self.add_di(u, v, dist);
         self.add_di(v, u, dist);
     }

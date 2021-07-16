@@ -7,6 +7,7 @@ fn rs(rt: usize) -> usize {
     return rt << 1 | 1;
 }
 
+// Point add, range sum
 struct SegTree<T> {
     sum: Vec<T>
 }
