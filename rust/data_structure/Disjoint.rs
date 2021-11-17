@@ -1,25 +1,26 @@
 struct Disjoint {
-    s: Vec<Option<usize>>
+    s: Vec<usize>
 }
 impl Disjoint {
     fn new(n: usize) -> Disjoint {
         Disjoint {
-            s: vec![None; n + 1]
+            s: vec![0; n + 1]
         }
     }
     fn root_of(&mut self, mut a: usize) -> usize {
         let mut b = a;
-        while let Some(fa) = self.s[a] {
-            a = fa;
+        while self.s[a] != 0 {
+            a = self.s[a];
         }
-        while let Some(fa) = self.s[b] {
-            self.s[b] = Some(a);
+        while self.s[b] != 0 {
+            let fa = self.s[b];
+            self.s[b] = a;
             b = fa;
         }
-        return a;
+        a
     }
     fn union_root_neq(&mut self, a: usize, b: usize) {
-        self.s[a] = Some(b);
+        self.s[a] = b;
     }
     fn union_root(&mut self, a: usize, b: usize) {
         if a != b {
@@ -32,6 +33,7 @@ impl Disjoint {
         self.union_root(ra, rb);
     }
 }
+
 
 struct Disjoint {
     s: Vec<isize>
