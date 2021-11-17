@@ -58,13 +58,12 @@ impl<T: Zero + Copy + std::default::Default + std::ops::AddAssign + std::clone::
 
 
 // Range add, range sum
-type T = i64;
-struct SegTree {
+struct SegTree<T> {
     sum: Vec<T>,
     lazy: Vec<T>
 }
-impl SegTree {
-    fn new(v: &Vec<T>) -> SegTree {
+impl<T: Zero + Copy + std::ops::AddAssign + Clone + std::ops::Mul<Output = T> + From<usize> + std::ops::Add<Output = T>> SegTree<T> {
+    fn with_init_value(v: &Vec<T>) -> Self {
         let n = v.len() - 1;
         let mut sgt = SegTree {
             sum: vec![T::zero(); n << 2],
@@ -87,17 +86,18 @@ impl SegTree {
         self.sum[rt] = self.sum[ls(rt)] + self.sum[rs(rt)];
     }
     fn push_down(&mut self, rt: usize, l: usize, mid: usize, r: usize) {
-        if self.lazy[rt] != T::zero() {
-            self.sum[ls(rt)] += self.lazy[rt] * (mid - l + 1) as T;
-            self.lazy[ls(rt)] += self.lazy[rt];
-            self.sum[rs(rt)] += self.lazy[rt] * (r - mid) as T;
-            self.lazy[rs(rt)] += self.lazy[rt];
+        let lazy = self.lazy[rt];
+        if !lazy.is_zero() {
+            self.sum[ls(rt)] += lazy * (mid - l + 1).into();
+            self.lazy[ls(rt)] += lazy;
+            self.sum[rs(rt)] += lazy * (r - mid).into();
+            self.lazy[rs(rt)] += lazy;
             self.lazy[rt] = T::zero();
         }
     }
     fn add(&mut self, rt: usize, l: usize, r: usize, ll: usize, rr: usize, v: T) {
         if ll <= l && r <= rr {
-            self.sum[rt] += v * (r - l + 1) as T;
+            self.sum[rt] += v * (r - l + 1).into();
             if l != r {
                 self.lazy[rt] += v;
             }
@@ -126,7 +126,7 @@ impl SegTree {
         if mid < rr {
             ans += self.sum(rs(rt), mid + 1, r, ll, rr);
         }
-        return ans;
+        ans
     }
 }
 
