@@ -68,6 +68,14 @@ macro_rules! define_mod_val_static {
                 Self { v }
             }
         }
+        impl Zero for $name {
+            fn zero() -> Self {
+                Self { v: 0 }
+            }
+            fn is_zero(&self) -> bool {
+                self.v == 0
+            }
+        }
         impl std::ops::AddAssign<$t> for $name {
             fn add_assign(&mut self, x: $t) {
                 self.v += x; // Assumed not overflow here
@@ -117,3 +125,9 @@ static mut P_USIZE: usize = 0;
 define_mod_val_static!(ModValUsize, usize, P_USIZE);
 static mut P_I32: i32 = 0;
 define_mod_val_static!(ModValI32, i32, i64, P_I32);
+
+impl From<usize> for ModValI32 {
+    fn from(v: usize) -> Self {
+        Self { v: v as i32 }
+    }
+}
