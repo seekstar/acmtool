@@ -1,6 +1,7 @@
 struct LCT {
-	int c[MAXN][2], fa[MAXN], val[MAXN], s[MAXN], sta[MAXN];
+	int c[MAXN][2], fa[MAXN], sta[MAXN], siz[MAXN];
 	bool r[MAXN];
+	unsigned int val[MAXN], s[MAXN], lazy_add[MAXN], lazy_mul[MAXN];
 
 	inline int& ls(int rt) {
 		return c[rt][0];
@@ -14,16 +15,28 @@ struct LCT {
 	inline int side(int x) {
 		return x == rs(fa[x]);
 	}
-	// void Init() {
+	void Init(int n) {
 		// Initially every node is a tree by itself.
-		// memset all to 0. 
-	// }
-	inline void pushup(int x) {
-		s[x] = s[ls(x)] ^ val[x] ^ s[rs(x)];
+		// memset all to 0.
+		for (int i = 1; i <= n; ++i) {
+			lazy_mul[i] = 1;
+			siz[i] = 1;
+		}
 	}
 	inline void pushr(int x) {
 		swap(ls(x), rs(x));
 		r[x] ^= 1;
+	}
+	inline void push_mul(int x, unsigned int c) {
+		(lazy_mul[x] *= c) %= p;
+		(lazy_add[x] *= c) %= p;
+		(val[x] *= c) %= p;
+		(s[x] *= c) %= p;
+	}
+	inline void push_add(int x, unsigned int c) {
+		(lazy_add[x] += c) %= p;
+		(val[x] += c) %= p;
+		(s[x] += c * siz[x]) %= p;
 	}
 	inline void pushdown(int x) {
 		if (r[x]) {
@@ -33,6 +46,24 @@ struct LCT {
 				pushr(rs(x));
 			r[x] = false;
 		}
+		if (lazy_mul[x] != 1) {
+			if (ls(x))
+				push_mul(ls(x), lazy_mul[x]);
+			if (rs(x))
+				push_mul(rs(x), lazy_mul[x]);
+			lazy_mul[x] = 1;
+		}
+		if (lazy_add[x] != 0) {
+			if (ls(x))
+				push_add(ls(x), lazy_add[x]);
+			if (rs(x))
+				push_add(rs(x), lazy_add[x]);
+			lazy_add[x] = 0;
+		}
+	}
+	inline void pushup(int x) {
+		s[x] = (s[ls(x)] + val[x] + s[rs(x)]) % p;
+		siz[x] = siz[ls(x)] + siz[rs(x)] + 1;
 	}
 	// s[x] is not updated
 	void __rotate_up(int x) {
@@ -94,17 +125,23 @@ struct LCT {
 		access(x);
 		pushr(x);
 	}
-	// void link_new(int x, int y) {}
-	void link(int x, int y) {
-		make_root(x);
-		if (find_root(y) == x)
-			return;
+	void __link(int x, int y) {
 		// If simply fa[x] = y, the complexity might be wrong.
 		access(y);
 		pushdown(x);
 		fa[y] = x;
 		ls(x) = y;
 		pushup(x); // Might be unnecessary
+	}
+	inline void link_new(int x, int y) {
+		make_root(x);
+		__link(x, y);
+	}
+	inline void link(int x, int y) {
+		make_root(x);
+		if (find_root(y) == x)
+			return;
+		__link(x, y);
 	}
 	// cut(x, parent(x))
 	// inline void cut(int x) {
@@ -114,18 +151,33 @@ struct LCT {
 	// 	fa[ls(x)] = 0;
 	// 	ls(x) = 0;
 	// }
-	void cut(int x, int y) {
+	inline void split(int x, int y) {
 		make_root(x);
 		access(y);
+	}
+	void cut_existing(int x, int y) {
+		split(x, y);
+		fa[x] = ls(y) = 0;
+		pushup(y); // Might be unnecessary
+	}
+	void cut(int x, int y) {
+		split(x, y);
 		if (ls(y) != x || rs(x) != 0)
 			return;	// No such edge (x, y)
 		fa[x] = ls(y) = 0;
 		pushup(y); // Might be unnecessary
 	}
-	inline int path_sum(int x, int y) {
-		make_root(x);
-		access(y);
+	inline unsigned int path_sum(int x, int y) {
+		split(x, y);
 		return s[y];
+	}
+	inline void path_add(int x, int y, unsigned int c) {
+		split(x, y);
+		push_add(y, c);
+	}
+	inline void path_mul(int x, int y, unsigned int c) {
+		split(x, y);
+		push_mul(y, c);
 	}
 	inline void update_val(int x, int v) {
 		__splay(x);
