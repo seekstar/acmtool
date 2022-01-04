@@ -38,9 +38,7 @@ fn simplex_base(
             }
             s = c[j] - s;
             if s > eps {
-                if s > lambda {
-                    lambda = s;
-                }
+                lambda = s;
                 let mut beta = f64::INFINITY;
                 for i in 0..m {
                     if a[i][j] < eps {
