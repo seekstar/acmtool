@@ -1,10 +1,10 @@
 # My acm tools
 
-#### Description
+## Description
 
 Almost all code was written by myself, but I learned from some code and ideas from others.
 
-#### overview
+## overview
 
 - Data structure: disjoint, binary indexed tree, persistent segment tree, heavy-light decomposition, splay, treap, etc.
 
@@ -13,3 +13,7 @@ Almost all code was written by myself, but I learned from some code and ideas fr
 - Math: linear sieve, mobius inversion, FFT, NTT, BSGS, Lagrange interpolation, Miller-Rabin, etc.
 
 - Geometry: convex hull, intersection of half-planes, rotating calipers, slope optimization, etc.
+
+## LICENSE
+
+This code collection is licensed under MIT license.
