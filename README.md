@@ -16,4 +16,4 @@ Almost all code was written by myself, but I learned from some code and ideas fr
 
 ## LICENSE
 
-This code collection is licensed under MIT license.
+Except as otherwise noted (below and/or in individual files), this code collection is licensed under MIT license.
