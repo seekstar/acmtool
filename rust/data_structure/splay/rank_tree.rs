@@ -40,8 +40,8 @@ struct Splay<T> {
 }
 
 impl<T: std::default::Default + std::cmp::Ord> Splay<T> {
-    fn new() -> Splay<T> {
-        let mut s = Vec::new();
+    fn with_capacity(n: usize) -> Splay<T> {
+        let mut s = Vec::with_capacity(n);
         s.push(SplayNode::<T>::default());
         Splay { s, root: 0 }
     }
@@ -80,9 +80,8 @@ impl<T: std::default::Default + std::cmp::Ord> Splay<T> {
         self.push_up(y);
     }
 
-    // Nodes from cur.pa to root will be updated
-    // Dirty: self.root, cur.scnts
-    fn __splay(&mut self, cur: u32, to: u32) {
+    // Nodes from cur to root will be updated
+    fn splay(&mut self, cur: u32, to: u32) {
         if cur == 0 {
             return;
         }
@@ -98,12 +97,14 @@ impl<T: std::default::Default + std::cmp::Ord> Splay<T> {
             self.__rotate_up(cur);
             pa = self.s[cur as usize].pa;
         }
+        if to == 0 {
+            self.root = cur;
+        }
+        self.push_up(cur);
     }
     // Nodes from cur to root will be updated
     fn rotate_to_root(&mut self, cur: u32) {
-        self.__splay(cur, 0);
-        self.root = cur;
-        self.push_up(cur);
+        self.splay(cur, 0);
     }
 
     fn size(&self) -> u32 {
@@ -152,8 +153,9 @@ impl<T: std::default::Default + std::cmp::Ord> Splay<T> {
     //     self.rotate_to_root(cur);
     //     return cur;
     // }
-    // The first node whose value >= key
-    // If return 0, then all nodes < key
+    // Find the first node whose value >= key
+    // If found, then the node will be the root and returned.
+    // Otherwise (all nodes < key), return 0
     fn lower_bound(&mut self, key: &T) -> u32 {
         let mut cur = self.root;
         let mut prev = 0;
@@ -167,32 +169,32 @@ impl<T: std::default::Default + std::cmp::Ord> Splay<T> {
                 cur = self.lc(cur);
             }
         }
-        self.rotate_to_root(prev);
+        if prev != ans {
+            self.splay(prev, ans);
+        }
+        self.splay(ans, 0);
         return ans;
     }
-    // If found, then it is rotated to root.
-    // If not found, then the last accessed node is rotated to root.
+    // The target node will be the root
     fn query_kth(&mut self, mut k: u32) -> u32 {
         let mut cur = self.root;
-        let mut prev = 0;
         while cur != 0 {
             let lscnt = self.s[self.lc(cur) as usize].scnt;
             let cur_cnt = self.s[cur as usize].cnt;
-            if lscnt < k && lscnt + cur_cnt >= k {
-                self.rotate_to_root(cur);
-                return cur;
-            }
-            prev = cur;
-            if lscnt >= k {
-                cur = self.lc(cur);
-            } else {
+            if lscnt < k {
+                if lscnt + cur_cnt >= k {
+                    self.rotate_to_root(cur);
+                    return cur;
+                }
                 k -= lscnt + cur_cnt;
                 cur = self.rc(cur);
+            } else {
+                cur = self.lc(cur);
             }
         }
-        self.rotate_to_root(prev);
-        return 0;
+        unreachable!();
     }
+    // The remaining smallest will be the root.
     fn del_smaller(&mut self, key: &T) -> u32 {
         let rt = self.lower_bound(key);
         if rt == 0 {
