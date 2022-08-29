@@ -34,7 +34,7 @@ impl<T> SplayNode<T> {
 }
 
 struct Splay<T> {
-    // Dirty: s[0].pa
+    // s[0].c, s[0].pa is dirty.
     s: Vec<SplayNode<T>>,
     root: u32,
 }
@@ -67,61 +67,44 @@ impl<T: std::default::Default + std::cmp::Ord> Splay<T> {
         self.s[pa as usize].c[side as usize] = c;
         self.s[c as usize].pa = pa;
     }
-    // y is the parent of x
-    // Will update y.scnt
-    // Dirty: self.root, x.scnt, x <-> y.pa
-    fn __rotate_up(&mut self, x: u32, y: u32, side_x: bool) {
+    // Will update x.pa.scnt
+    // Dirty: self.root, x.scnt
+    fn __rotate_up(&mut self, x: u32) {
+        let y = self.s[x as usize].pa;
+        let z = self.s[y as usize].pa;
+        let side_x = self.side(x);
         let w = self.s[x as usize].c[!side_x as usize];
+        self.set_child(x, z, self.side(y));
         self.set_child(w, y, side_x);
         self.set_child(y, x, !side_x);
         self.push_up(y);
     }
 
-    // Nodes from x to root will be updated
-    // Dirty: x <-> to
-    fn __splay(&mut self, x: u32, to: u32) {
-        if x == 0 {
-            return;
-        }
-        let mut y = self.s[x as usize].pa;
-        let mut side_x = self.side(x);
-        while y != to {
-            let z = self.s[y as usize].pa;
-            if z == to {
-                self.__rotate_up(x, y, side_x);
-                break;
-            }
-            let z_pa = self.s[z as usize].pa;
-            let side_y = self.side(y);
-            let side_z = self.side(z);
-            if side_x == side_y {
-                self.__rotate_up(y, z, side_y);
-                self.__rotate_up(x, y, side_x);
-            } else {
-                self.__rotate_up(x, y, side_x);
-                self.__rotate_up(x, z, side_y);
-            }
-            side_x = side_z;
-            y = z_pa;
-        }
-        self.push_up(x);
-    }
     // Nodes from cur to root will be updated
-    fn rotate_to_root(&mut self, cur: u32) {
+    fn splay(&mut self, cur: u32, to: u32) {
         if cur == 0 {
             return;
         }
-        self.__splay(cur, 0);
-        self.root = cur;
-        self.s[cur as usize].pa = 0;
-    }
-    fn rotate_to(&mut self, x: u32, to: u32, side: bool) {
-        if to == 0 {
-            self.rotate_to_root(x);
-        } else {
-            self.__splay(x, to);
-            self.set_child(x, to, side);
+        let mut pa = self.s[cur as usize].pa;
+        while pa != to {
+            if self.s[pa as usize].pa != to {
+                if self.side(cur) == self.side(pa) {
+                    self.__rotate_up(pa);
+                } else {
+                    self.__rotate_up(cur);
+                }
+            }
+            self.__rotate_up(cur);
+            pa = self.s[cur as usize].pa;
         }
+        if to == 0 {
+            self.root = cur;
+        }
+        self.push_up(cur);
+    }
+    // Nodes from cur to root will be updated
+    fn rotate_to_root(&mut self, cur: u32) {
+        self.splay(cur, 0);
     }
 
     fn size(&self) -> u32 {
@@ -187,9 +170,9 @@ impl<T: std::default::Default + std::cmp::Ord> Splay<T> {
             }
         }
         if prev != ans {
-            self.rotate_to(prev, ans, false);
+            self.splay(prev, ans);
         }
-        self.rotate_to_root(ans);
+        self.splay(ans, 0);
         return ans;
     }
     // The target node will be the root
@@ -229,36 +212,6 @@ impl<T: std::default::Default + std::cmp::Ord> Splay<T> {
         self.s[rt as usize].c[0] = 0;
         self.push_up(rt);
         return deleted;
-    }
-
-    fn check_sanity_subtree(&self, rt: u32) {
-        let mut scnt = self.s[rt as usize].cnt;
-        if self.lc(rt) != 0 {
-            assert_eq!(self.s[self.lc(rt) as usize].pa, rt);
-            scnt += self.s[self.lc(rt) as usize].scnt;
-            self.check_sanity_subtree(self.lc(rt));
-        }
-        if self.rc(rt) != 0 {
-            assert_eq!(self.s[self.rc(rt) as usize].pa, rt);
-            scnt += self.s[self.rc(rt) as usize].scnt;
-            self.check_sanity_subtree(self.rc(rt));
-        }
-        assert_eq!(scnt, self.s[rt as usize].scnt);
-    }
-    #[allow(unused)]
-    fn check_sanity(&self) {
-        // assert!(self.s[0] == SplayNode::<T>::default());
-        assert_eq!(self.s[0].c[0], 0);
-        assert_eq!(self.s[0].c[1], 0);
-        // assert_eq!(self.s[0].pa, 0);
-        assert_eq!(self.s[0].cnt, 0);
-        assert_eq!(self.s[0].scnt, 0);
-        assert!(self.s[0].key == T::default());
-        if self.root == 0 {
-            return;
-        }
-        assert_eq!(self.s[self.root as usize].pa, 0);
-        self.check_sanity_subtree(self.root);
     }
 }
 

@@ -1,63 +1,69 @@
+// 307ms. Actuall slower than the version with parent pointer
+template <typename T>
+struct SplayNode {
+	int c[2];
+	int cnt;
+	int siz;
+	T key;
+};
+
 template<typename T>
 struct Splay {
 	//0 is invalid
-	int c[MAXN][2], pa[MAXN], cnt[MAXN], siz[MAXN], tot, root;
-	T keys[MAXN];
+	SplayNode<T> s[MAXN];
+	int tot, root;
 
 	inline int& lc(int rt) {
-		return c[rt][0];
+		return s[rt].c[0];
 	}
 	inline int& rc(int rt) {
-		return c[rt][1];
+		return s[rt].c[1];
 	}
 
 	void Init() {
 		root = tot = 0;
 	}
 	bool Side(int rt) {
-		return rt == rc(pa[rt]);
+		return rt == rc(s[rt].pa);
 	}
 	void PushUp(int rt) {
-		siz[rt] = cnt[rt];
+		s[rt].siz = s[rt].cnt;
 		// if (lc(rt))
-		siz[rt] += siz[lc(rt)];
+		s[rt].siz += s[lc(rt)].siz;
 		// if (rc(rt))
-		siz[rt] += siz[rc(rt)];
+		s[rt].siz += s[rc(rt)].siz;
 	}
 	void Init(int rt, const T& key) {
-		lc(rt) = rc(rt) = pa[rt] = 0;
-		siz[rt] = cnt[rt] = 1;
-		keys[rt] = key;
+		lc(rt) = rc(rt) = 0;
+		s[rt].siz = s[rt].cnt = 1;
+		s[rt].key = key;
 	}
-	void SetSon(int x, int f, int s) {
+	void SetSon(int x, int f, int side) {
 		// if (f)
-		c[f][s] = x;
-		// if (x)
-		pa[x] = f;
+		s[f].c[side] = x;
 	}
 	// y is the parent of x
 	// Will update y.scnt
-    // Dirty: root, x.scnt
+    // Dirty: root, x.scnt, x <-> to
 	void __RotateUp(int x, int y, bool side_x) {
-		SetSon(c[x][!side_x], y, side_x);
+		SetSon(s[x].c[!side_x], y, side_x);
 		SetSon(y, x, !side_x);
 		PushUp(y);
 	}
 	// Nodes from x to root will be updated
-    // Dirty: x <-> to
-	void __Splay(int x, int to) {
-		if (!x) return;
-		int y = pa[x];
-		bool side_x = Side(x);
-		while (y != to) {
-			int z = pa[y];
-			if (z == to) {
+	// Dirty: x.scnt, x <-> path[0]
+	void __Splay(int x, std::pair<int, bool>* path, int n) {
+		while (n) {
+			n -= 1;
+			int y = path[n].first;
+			bool side_x = path[n].second;
+			if (n == 0) {
 				__RotateUp(x, y, side_x);
 				break;
 			}
-			int z_pa = pa[z];
-			bool side_y = Side(y);
-			bool side_z = Side(z);
+			n -= 1;
+			int z = path[n].first;
+			bool side_y = path[n].second;
 			if (side_x == side_y) {
 				__RotateUp(y, z, side_y);
 				__RotateUp(x, y, side_x);
@@ -65,31 +71,22 @@ struct Splay {
 				__RotateUp(x, y, side_x);
 				__RotateUp(x, z, side_y);
 			}
-			side_x = side_z;
-			y = z_pa;
 		}
+	}
+	// Nodes from x to path[0] will be updated
+	// Dirty: x <-> path[0]
+	void RotateTo(int x, std::pair<int, bool>* path, int n) {
+		__Splay(x, path, n);
 		PushUp(x);
 	}
     // Nodes from cur to root will be updated
-	void RotateToRoot(int cur) {
-		if (cur == 0)
-			return;
-		__Splay(cur, 0);
+	void RotateToRoot(int cur, std::pair<int, bool>* path, int n) {
+		RotateTo(cur, path, n);
 		root = cur;
-		pa[cur] = 0;
-		PushUp(cur);
-	}
-	void RotateTo(int x, int to, bool side) {
-		if (to == 0) {
-			RotateToRoot(x);
-		} else {
-			__Splay(x, to);
-			SetSon(x, to, side);
-		}
 	}
 
 	size_t size() {
-		return siz[root];
+		return s[root].siz;
 	}
 	// The new node will be the root
 	void Insert(const T& key) {
@@ -97,22 +94,22 @@ struct Splay {
 			Init(root = ++tot, key);
 			return;
 		}
-		int now = root, f;
-		bool side;
+		int now = root;
+		std::vector<std::pair<int, bool>> path;
 		while (1) {
-			if (!now) {
-				Init(now = ++tot, key);
-				SetSon(now, f, side);
-				break;
-			} else if (keys[now] == key) {
-				++cnt[now];
+			if (s[now].key == key) {
+				++s[now].cnt;
 				break;
 			}
-			f = now;
-			side = keys[now] < key;
-			now = c[now][side];
+			bool side = s[now].key < key;
+			path.emplace_back(now, side);
+			now = s[now].c[side];
+			if (!now) {
+				Init(now = ++tot, key);
+				break;
+			}
 		}
-		RotateToRoot(now);
+		RotateToRoot(now, path.data(), path.size());
 	}
 
 	// The target node will be the root
@@ -128,19 +125,40 @@ struct Splay {
 	// Otherwise (all nodes < key), return 0
 	int lower_bound(const T& key) {
 		int cur = root;
-		int prev = 0, ans = 0;
+		std::vector<std::pair<int, bool>> path;
+		size_t ans_depth = 0;
 		while (cur != 0) {
-			prev = cur;
-			if (keys[cur] < key) {
+			bool side = s[cur].key < key;
+			path.emplace_back(cur, side);
+			if (side) {
 				cur = rc(cur);
 			} else {
-				ans = cur;
+				ans_depth = path.size();
 				cur = lc(cur);
 			}
 		}
-		if (prev != ans)
-			RotateTo(prev, ans, false);
-		RotateToRoot(ans);
+		if (path.empty())
+			return 0;
+		int prev = path.back().first;
+		path.pop_back();
+		int ans;
+		if (ans_depth <= path.size()) {
+			// ans != prev
+			RotateTo(prev, path.data() + ans_depth, path.size() - ans_depth);
+			path.resize(ans_depth);
+			if (path.empty()) {
+				root = prev;
+				return 0;
+			}
+			ans = path.back().first;
+			bool side = path.back().second;
+			path.pop_back();
+			SetSon(prev, ans, side);
+			// ans.scnt will be updated by rotate_to_root later.
+		} else {
+			ans = prev;
+		}
+		RotateToRoot(ans, path.data(), path.size());
 		return ans;
 	}
 	// int FindPreOrNext(int now, bool nex) const {
@@ -178,17 +196,21 @@ struct Splay {
 
     // The target node will be the root
 	int QueryKth(int k) {
-		int rt = root;
-		while (rt) {
-			if (siz[lc(rt)] < k) {
-				if (siz[lc(rt)] + cnt[rt] >= k) {
-					RotateToRoot(rt);
-					return rt;
-				}
-				k -= siz[lc(rt)] + cnt[rt];
-				rt = rc(rt);
+		int x = root;
+		std::vector<std::pair<int, bool> > path;
+		while (x) {
+			int lcnt = s[lc(x)].siz;
+			if (lcnt < k && k <= lcnt + s[x].cnt) {
+				RotateToRoot(x, path.data(), path.size());
+				return x;
+			}
+			bool side = lcnt < k;
+			path.emplace_back(x, side);
+			if (side) {
+				k -= s[lc(x)].siz + s[x].cnt;
+				x = rc(x);
 			} else {
-				rt = lc(rt);
+				x = lc(x);
 			}
 		}
 		assert(0);
@@ -226,14 +248,13 @@ struct Splay {
 	int DelSmaller(const T& key) {
 		int rt = lower_bound(key);
 		if (rt == 0) {
-			int deleted = siz[root];
+			int deleted = s[root].siz;
 			root = 0;
 			return deleted;
 		}
-		int deleted = siz[lc(rt)];
+		int deleted = s[lc(rt)].siz;
 		lc(rt) = 0;
 		PushUp(rt);
 		return deleted;
 	}
 };
-

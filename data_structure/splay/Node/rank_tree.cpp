@@ -1,45 +1,57 @@
+template <typename T>
+struct SplayNode {
+	int c[2];
+	int pa;
+	int cnt;
+	int siz;
+	T key;
+};
+
 template<typename T>
 struct Splay {
 	//0 is invalid
-	int c[MAXN][2], pa[MAXN], cnt[MAXN], siz[MAXN], tot, root;
-	T keys[MAXN];
+	SplayNode<T> s[MAXN];
+	int tot, root;
 
 	inline int& lc(int rt) {
-		return c[rt][0];
+		return s[rt].c[0];
 	}
 	inline int& rc(int rt) {
-		return c[rt][1];
+		return s[rt].c[1];
+	}
+	inline int& pa(int rt) {
+		return s[rt].pa;
 	}
 
 	void Init() {
 		root = tot = 0;
 	}
 	bool Side(int rt) {
-		return rt == rc(pa[rt]);
+		return rt == rc(pa(rt));
 	}
 	void PushUp(int rt) {
-		siz[rt] = cnt[rt];
+		s[rt].siz = s[rt].cnt;
 		// if (lc(rt))
-		siz[rt] += siz[lc(rt)];
+		s[rt].siz += s[lc(rt)].siz;
 		// if (rc(rt))
-		siz[rt] += siz[rc(rt)];
+		s[rt].siz += s[rc(rt)].siz;
 	}
 	void Init(int rt, const T& key) {
-		lc(rt) = rc(rt) = pa[rt] = 0;
-		siz[rt] = cnt[rt] = 1;
-		keys[rt] = key;
+		lc(rt) = rc(rt) = pa(rt) = 0;
+		s[rt].siz = s[rt].cnt = 1;
+		s[rt].key = key;
 	}
-	void SetSon(int x, int f, int s) {
+	void SetSon(int x, int f, int side) {
 		// if (f)
-		c[f][s] = x;
+		s[f].c[side] = x;
 		// if (x)
-		pa[x] = f;
+		pa(x) = f;
 	}
 	// y is the parent of x
 	// Will update y.scnt
     // Dirty: root, x.scnt
 	void __RotateUp(int x, int y, bool side_x) {
-		SetSon(c[x][!side_x], y, side_x);
+		SetSon(s[x].c[!side_x], y, side_x);
 		SetSon(y, x, !side_x);
 		PushUp(y);
 	}
@@ -47,15 +59,15 @@ struct Splay {
     // Dirty: x <-> to
 	void __Splay(int x, int to) {
 		if (!x) return;
-		int y = pa[x];
+		int y = pa(x);
 		bool side_x = Side(x);
 		while (y != to) {
-			int z = pa[y];
+			int z = pa(y);
 			if (z == to) {
 				__RotateUp(x, y, side_x);
 				break;
 			}
-			int z_pa = pa[z];
+			int z_pa = pa(z);
 			bool side_y = Side(y);
 			bool side_z = Side(z);
 			if (side_x == side_y) {
@@ -76,7 +88,7 @@ struct Splay {
 			return;
 		__Splay(cur, 0);
 		root = cur;
-		pa[cur] = 0;
+		pa(cur) = 0;
 		PushUp(cur);
 	}
 	void RotateTo(int x, int to, bool side) {
@@ -89,7 +101,7 @@ struct Splay {
 	}
 
 	size_t size() {
-		return siz[root];
+		return s[root].siz;
 	}
 	// The new node will be the root
 	void Insert(const T& key) {
@@ -104,13 +116,13 @@ struct Splay {
 				Init(now = ++tot, key);
 				SetSon(now, f, side);
 				break;
-			} else if (keys[now] == key) {
-				++cnt[now];
+			} else if (s[now].key == key) {
+				++s[now].cnt;
 				break;
 			}
 			f = now;
-			side = keys[now] < key;
-			now = c[now][side];
+			side = s[now].key < key;
+			now = s[now].c[side];
 		}
 		RotateToRoot(now);
 	}
@@ -131,7 +143,7 @@ struct Splay {
 		int prev = 0, ans = 0;
 		while (cur != 0) {
 			prev = cur;
-			if (keys[cur] < key) {
+			if (s[cur].key < key) {
 				cur = rc(cur);
 			} else {
 				ans = cur;
@@ -180,12 +192,12 @@ struct Splay {
 	int QueryKth(int k) {
 		int rt = root;
 		while (rt) {
-			if (siz[lc(rt)] < k) {
-				if (siz[lc(rt)] + cnt[rt] >= k) {
+			if (s[lc(rt)].siz < k) {
+				if (s[lc(rt)].siz + s[rt].cnt >= k) {
 					RotateToRoot(rt);
 					return rt;
 				}
-				k -= siz[lc(rt)] + cnt[rt];
+				k -= s[lc(rt)].siz + s[rt].cnt;
 				rt = rc(rt);
 			} else {
 				rt = lc(rt);
@@ -226,14 +238,13 @@ struct Splay {
 	int DelSmaller(const T& key) {
 		int rt = lower_bound(key);
 		if (rt == 0) {
-			int deleted = siz[root];
+			int deleted = s[root].siz;
 			root = 0;
 			return deleted;
 		}
-		int deleted = siz[lc(rt)];
+		int deleted = s[lc(rt)].siz;
 		lc(rt) = 0;
 		PushUp(rt);
 		return deleted;
 	}
 };
-

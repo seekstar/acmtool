@@ -1,4 +1,4 @@
-void PrintTree(int rt, string& str, int(PrintNode)(T)) {
+	void PrintTree(int rt, string& str, int(PrintNode)(T)) {
         int rec = str.length();
         int len;
         if (rt) {
@@ -6,13 +6,13 @@ void PrintTree(int rt, string& str, int(PrintNode)(T)) {
             printf("---");
             str.append(len, ' ');
             str.append(" | ");
-            PrintTree(ls(rt), str, PrintNode);
+            PrintTree(lc(rt), str, PrintNode);
             printf("%s\n", str.c_str());
             str[str.length()-1] = str[str.length()-2] = '-';
             printf("%s", str.c_str());
 
             str[str.length()-1] = str[str.length()-2] = ' ';
-            PrintTree(rs(rt), str, PrintNode);
+            PrintTree(rc(rt), str, PrintNode);
 
             str.resize(rec);
         } else {
