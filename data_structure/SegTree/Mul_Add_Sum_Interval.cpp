@@ -4,7 +4,7 @@ template<typename ValType>
 struct SegTree
 {
     ValType val[MAX_NODE_SEGTREE];
-    //THe lazy tags are for the children. The root itself is up to date.
+    //The lazy tags are for the children. The root itself is up to date.
     ValType lazyMul[MAX_NODE_SEGTREE];  //multiple first, then add
     ValType lazyAdd[MAX_NODE_SEGTREE];
 
